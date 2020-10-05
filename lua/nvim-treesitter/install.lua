@@ -182,7 +182,7 @@ local function select_mv_cmd(from, to, cwd)
 end
 
 local function select_download_commands(repo, project_name, cache_folder, revision)
-  if vim.fn.executable('unzip') == 1 and vim.fn.executable('curl') == 1 and repo.url:find("github.com", 1, true) then
+  if vim.fn.executable('tar') == 1 and vim.fn.executable('curl') == 1 and repo.url:find("github.com", 1, true) then
 
     revision = revision or repo.branch or "master"
     local path_sep = utils.get_path_sep()
@@ -195,28 +195,28 @@ local function select_download_commands(repo, project_name, cache_folder, revisi
         opts = {
           args = {
             '-L', -- follow redirects
-            repo.url.."/archive/"..revision..".zip",
+            repo.url.."/archive/"..revision..".tar.gz",
             '--output',
-            project_name..".zip"
+            project_name..".tar.gz"
           },
           cwd = cache_folder,
         },
       },
       {
-        cmd = 'unzip',
+        cmd = 'tar',
         info = 'Extracting...',
-        err = 'Error during unzipping',
+        err = 'Error during tarball extraction.',
         opts = {
           args = {
-            '-o',
-            project_name..".zip",
-            '-d',
+            'xvf',
+            project_name..".tar.gz",
+            '-C',
             project_name..'-tmp',
           },
           cwd = cache_folder,
         },
       },
-      select_rm_file_cmd(cache_folder..path_sep..project_name..".zip"),
+      select_rm_file_cmd(cache_folder..path_sep..project_name..".tar.gz"),
       select_mv_cmd(utils.join_path(project_name..'-tmp', repo.url:match('[^/]-$')..'-'..revision),
                     project_name,
                     cache_folder),
